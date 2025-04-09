@@ -3,7 +3,6 @@ import numpy as np
 import faiss
 from sentence_transformers import SentenceTransformer
 import streamlit as st
-import io
 
 # Test Type mapping
 test_type_map = {
@@ -48,7 +47,7 @@ if query:
     for idx in indices[0]:
         row = df.iloc[idx]
         test_types = str(row['Test Type'])
-        test_type = ", ".join([test_type_map.get(abbrev.strip(), abbrev.strip()) for abbrev in test_types.split()])
+        test_type = [test_type_map.get(abbrev.strip(), abbrev.strip()) for abbrev in test_types.split()]
 
         results.append({
             "Assessment Name": f"[{row['Individual Test Solutions']}]({row['URL']})",
@@ -60,14 +59,13 @@ if query:
         })
 
     st.markdown("### 📋 Top Recommendations")
-    # Use st.table for a cleaner static view
-    st.table(pd.DataFrame(results))
-
-    # Add download button for CSV
-    csv = pd.DataFrame(results).to_csv(index=False)
-    st.download_button(
-        label="📥 Download as CSV",
-        data=csv,
-        file_name="shl_assessment_recommendations.csv",
-        mime="text/csv"
-    )
+    # Enhance visual with styled DataFrame
+    styled_results = pd.DataFrame(results).style.set_properties(**{
+        'text-align': 'left',
+        'border': '1px solid #ddd',
+        'padding': '8px'
+    }).set_table_styles([
+        {'selector': 'th', 'props': [('background-color', '#f2f2f2'), ('font-weight', 'bold'), ('text-align', 'left')]},
+        {'selector': 'td', 'props': [('white-space', 'normal')]}
+    ])
+    st.dataframe(styled_results)
